@@ -35,7 +35,7 @@ services:
       - key: APP_PORT
         value: 8000
       - key: CORS_ORIGINS
-        value: https://stellerfi.myshopify.com
+        value: "*"
       - key: MERCHANT_SECRET_KEY
         sync: false
       - key: CONTRACT_ID
