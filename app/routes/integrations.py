@@ -58,48 +58,34 @@ async def create_simple_checkout(
     if not merchant:
         raise HTTPException(status_code=401, detail="Invalid API key")
     
-    # Create payment session
-    from app.routes.sessions import create_payment_session
-    from app.schemas import PaymentSessionCreate
-    
-    session_data = PaymentSessionCreate(
-        merchant_id=merchant.id,
-        amount_fiat=request.amount,
-        fiat_currency=request.currency,
-        success_url=request.success_url,
-        cancel_url=request.cancel_url,
-        webhook_url=request.webhook_url,
-        metadata={"order_id": request.order_id, "customer_email": request.customer_email}
-    )
-    
-    # Import session creation logic
+    # Create payment session directly
     from stellar_sdk import Keypair
     from app.core.config import settings
+    from app.models import PaymentStatus
+    from datetime import datetime, timedelta
+    from app.services.payment_utils import generate_session_id
+    from app.services.soroban_validator import validator_service
+    import logging
     
-    session_id = f"pay_{secrets.token_urlsafe(16)}"
+    logger = logging.getLogger(__name__)
     
-    # Calculate USDC amount (assuming 1:1 for testnet)
-    amount_usdc = float(request.amount)
+    session_id = generate_session_id()
     
-    # Calculate XLM amount (example conversion, adjust as needed)
-    xlm_price = 0.10  # Example: 1 XLM = $0.10
-    amount_xlm = round(float(request.amount) / xlm_price, 2)
+    # Calculate USDC amount (assuming 1:1 for USD)
+    amount_usdc = str(float(request.amount))
     
-    # Generate unique memo
+    # Generate payment memo
     memo = session_id
     
     new_session = PaymentSession(
-        session_id=session_id,
+        id=session_id,
         merchant_id=merchant.id,
         amount_fiat=float(request.amount),
         fiat_currency=request.currency,
         amount_usdc=amount_usdc,
-        amount_xlm=amount_xlm,
-        payment_memo=memo,
+        status=PaymentStatus.CREATED,
         success_url=request.success_url,
-        cancel_url=request.cancel_url,
-        webhook_url=request.webhook_url,
-        metadata={"order_id": request.order_id, "customer_email": request.customer_email}
+        cancel_url=request.cancel_url
     )
     
     db.add(new_session)
