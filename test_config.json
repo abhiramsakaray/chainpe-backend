@@ -1,0 +1,44 @@
+{
+  "merchant": {
+    "base_url": "http://localhost:8000",
+    "endpoints": {
+      "register": "/auth/register",
+      "login": "/auth/login",
+      "profile": "/merchant/profile",
+      "create_payment": "/v1/payment_sessions"
+    },
+    "test_data": {
+      "merchant": {
+        "name": "Demo Store",
+        "email": "merchant@demo.com",
+        "password": "password123",
+        "stellar_address": "GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "webhook_url": "https://webhook.site/your-unique-url"
+      },
+      "payment": {
+        "amount": 1999,
+        "currency": "INR",
+        "success_url": "https://merchant.com/success",
+        "cancel_url": "https://merchant.com/cancel"
+      }
+    }
+  },
+  "admin": {
+    "login": {
+      "email": "admin@paymentgateway.com",
+      "password": "admin123456"
+    },
+    "endpoints": {
+      "merchants": "/admin/merchants",
+      "payments": "/admin/payments",
+      "health": "/admin/health",
+      "disable_merchant": "/admin/merchants/{merchant_id}/disable"
+    }
+  },
+  "stellar": {
+    "network": "testnet",
+    "horizon_url": "https://horizon-testnet.stellar.org",
+    "usdc_issuer": "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5",
+    "testnet_faucet": "https://friendbot.stellar.org"
+  }
+}

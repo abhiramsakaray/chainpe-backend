@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChainPe - Secure Payment</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            margin: 0;
+        }
+
+        .container {
+            background: #ffffff;
+            border: 2px solid #000000;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-height: 100vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: #000000;
+            color: #ffffff;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 2px solid #000000;
+            flex-shrink: 0;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .header .merchant-name {
+            font-size: 14px;
+            font-weight: 400;
+            margin-top: 6px;
+        }
+
+        .content {
+            padding: 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .amount-section {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 18px;
+            background: #ffffff;
+            border: 2px solid #000000;
+        }
+
+        .amount-label {
+            color: #000000;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .amount {
+            font-size: 32px;
+            font-weight: 700;
+            color: #000000;
+            margin: 8px 0;
+        }
+
+        .usdc-amount {
+            font-size: 15px;
+            color: #000000;
+            font-weight: 500;
+            margin-top: 8px;
+        }
+
+        .payment-tabs {
+            display: flex;
+            gap: 0;
+            margin: 20px 0;
+            border: 2px solid #000000;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: #ffffff;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            font-size: 13px;
+            color: #000000;
+            border-right: 2px solid #000000;
+        }
+
+        .tab-button:last-child {
+            border-right: none;
+        }
+
+        .tab-button.active {
+            background: #000000;
+            color: #ffffff;
+        }
+
+        .tab-button:hover:not(.active) {
+            background: #f5f5f5;
+        }
+
+        .qr-section {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .qr-container {
+            display: none;
+        }
+
+        .qr-container.active {
+            display: block;
+        }
+
+        .qr-code {
+            background: #ffffff;
+            padding: 15px;
+            border: 2px solid #000000;
+            display: inline-block;
+        }
+
+        .qr-code img {
+            display: block;
+            max-width: 200px;
+            width: 100%;
+            height: auto;
+        }
+
+        .wallet-icons {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .wallet-icon {
+            padding: 6px 12px;
+            background: #ffffff;
+            border: 1px solid #000000;
+            font-size: 10px;
+            color: #000000;
+            font-weight: 500;
+        }
+
+        .instruction {
+            text-align: left;
+            color: #000000;
+            margin: 20px 0;
+            font-size: 12px;
+            line-height: 1.6;
+            border: 2px solid #000000;
+            padding: 15px;
+            background: #ffffff;
+        }
+
+        .instruction strong {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+
+        .payment-details {
+            background: #ffffff;
+            padding: 15px;
+            border: 2px solid #000000;
+            margin: 20px 0;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin: 12px 0;
+            font-size: 11px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e0e0e0;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .detail-label {
+            color: #000000;
+            font-weight: 600;
+            min-width: 120px;
+        }
+
+        .detail-value {
+            color: #000000;
+            font-weight: 400;
+            font-family: 'Courier New', monospace;
+            word-break: break-all;
+            flex: 1;
+            text-align: right;
+        }
+
+        .copy-btn {
+            background: #000000;
+            color: #ffffff;
+            border: none;
+            padding: 4px 10px;
+            cursor: pointer;
+            font-size: 10px;
+            margin-left: 8px;
+            transition: all 0.2s;
+            font-weight: 600;
+        }
+
+        .copy-btn:hover {
+            background: #333333;
+        }
+
+        .copy-btn:active {
+            background: #000000;
+        }
+
+        .status {
+            text-align: center;
+            padding: 12px;
+            margin: 20px 0;
+            font-weight: 600;
+            border: 2px solid #000000;
+            font-size: 13px;
+        }
+
+        .status.pending {
+            background: #ffffff;
+            color: #000000;
+        }
+
+        .status.success {
+            background: #000000;
+            color: #ffffff;
+        }
+
+        .status.expired {
+            background: #ffffff;
+            color: #000000;
+            border-color: #000000;
+        }
+
+        .timer {
+            text-align: center;
+            margin: 15px 0;
+            font-size: 16px;
+            color: #000000;
+            font-weight: 600;
+        }
+
+        .timer.warning {
+            color: #000000;
+        }
+
+        .timer.danger {
+            color: #000000;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .footer {
+            text-align: center;
+            padding: 15px;
+            color: #666666;
+            font-size: 11px;
+            border-top: 2px solid #000000;
+            background: #ffffff;
+            flex-shrink: 0;
+        }
+
+        .powered-by {
+            margin-top: 8px;
+            font-weight: 600;
+            color: #000000;
+        }
+
+        .cancel-btn {
+            width: 100%;
+            padding: 12px;
+            background: #000000;
+            color: #ffffff;
+            border: 2px solid #000000;
+            font-size: 13px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.2s;
+            font-weight: 600;
+        }
+
+        .cancel-btn:hover {
+            background: #ffffff;
+            color: #000000;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 3px solid #e0e0e0;
+            border-top: 3px solid #000000;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Desktop - fit to viewport */
+        @media (min-width: 769px) {
+            body {
+                padding: 20px;
+            }
+            
+            .container {
+                max-height: 95vh;
+            }
+            
+            .qr-code img {
+                max-width: 220px;
+            }
+        }
+
+        /* Tablet */
+        @media (max-width: 768px) {
+            body {
+                padding: 0;
+            }
+
+            .container {
+                border: none;
+                max-height: 100vh;
+                border-left: 2px solid #000000;
+                border-right: 2px solid #000000;
+            }
+
+            .header {
+                padding: 18px;
+            }
+
+            .header h1 {
+                font-size: 22px;
+            }
+
+            .header .merchant-name {
+                font-size: 13px;
+            }
+
+            .content {
+                padding: 18px;
+            }
+
+            .amount-section {
+                padding: 16px;
+            }
+
+            .amount {
+                font-size: 28px;
+            }
+
+            .usdc-amount {
+                font-size: 14px;
+            }
+
+            .tab-button {
+                padding: 10px;
+                font-size: 12px;
+            }
+
+            .qr-code img {
+                max-width: 180px;
+            }
+
+            .detail-row {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .detail-value {
+                text-align: left;
+                margin-top: 6px;
+                font-size: 10px;
+            }
+
+            .detail-label {
+                min-width: auto;
+            }
+
+            .copy-btn {
+                margin-left: 0;
+                margin-top: 6px;
+            }
+
+            .instruction {
+                padding: 12px;
+                font-size: 11px;
+            }
+
+            .timer {
+                font-size: 15px;
+            }
+        }
+
+        /* Mobile Portrait */
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .amount {
+                font-size: 26px;
+            }
+
+            .usdc-amount {
+                font-size: 13px;
+            }
+
+            .qr-code {
+                padding: 12px;
+            }
+
+            .qr-code img {
+                max-width: 160px;
+            }
+
+            .wallet-icons {
+                gap: 6px;
+            }
+
+            .wallet-icon {
+                padding: 5px 10px;
+                font-size: 9px;
+            }
+
+            .instruction {
+                font-size: 10px;
+            }
+
+            .instruction strong {
+                font-size: 11px;
+            }
+        }
+
+        /* Mobile Landscape */
+        @media (max-width: 896px) and (orientation: landscape) {
+            body {
+                padding: 0;
+            }
+
+            .container {
+                max-height: 100vh;
+                border: none;
+            }
+
+            .header {
+                padding: 12px;
+            }
+
+            .header h1 {
+                font-size: 18px;
+                margin-bottom: 4px;
+            }
+
+            .header .merchant-name {
+                font-size: 12px;
+            }
+
+            .content {
+                padding: 15px;
+            }
+
+            .amount-section {
+                padding: 12px;
+                margin-bottom: 15px;
+            }
+
+            .amount {
+                font-size: 24px;
+                margin: 6px 0;
+            }
+
+            .usdc-amount {
+                font-size: 12px;
+            }
+
+            .payment-tabs {
+                margin: 15px 0;
+            }
+
+            .tab-button {
+                padding: 8px;
+                font-size: 11px;
+            }
+
+            .qr-section {
+                margin: 15px 0;
+            }
+
+            .qr-code {
+                padding: 10px;
+            }
+
+            .qr-code img {
+                max-width: 140px;
+            }
+
+            .wallet-icons {
+                margin-top: 10px;
+                gap: 5px;
+            }
+
+            .wallet-icon {
+                padding: 4px 8px;
+                font-size: 9px;
+            }
+
+            .instruction {
+                padding: 10px;
+                font-size: 10px;
+                margin: 15px 0;
+            }
+
+            .instruction strong {
+                font-size: 11px;
+                margin-bottom: 6px;
+            }
+
+            .payment-details {
+                padding: 12px;
+                margin: 15px 0;
+            }
+
+            .detail-row {
+                margin: 8px 0;
+                padding-bottom: 8px;
+                font-size: 10px;
+            }
+
+            .status {
+                padding: 10px;
+                margin: 15px 0;
+                font-size: 12px;
+            }
+
+            .timer {
+                font-size: 14px;
+                margin: 12px 0;
+            }
+
+            .cancel-btn {
+                padding: 10px;
+                font-size: 12px;
+                margin-top: 12px;
+            }
+
+            .footer {
+                padding: 10px;
+                font-size: 10px;
+            }
+
+            .powered-by {
+                margin-top: 6px;
+            }
+        }
+
+        /* Small landscape phones */
+        @media (max-height: 450px) and (orientation: landscape) {
+            .header h1 {
+                font-size: 16px;
+            }
+
+            .amount {
+                font-size: 20px;
+            }
+
+            .qr-code img {
+                max-width: 120px;
+            }
+
+            .instruction {
+                font-size: 9px;
+            }
+
+            .detail-row {
+                font-size: 9px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>ChainPe Payment</h1>
+            <div class="merchant-name">{{ merchant_name }}</div>
+        </div>
+
+        <div class="content">
+            <div class="amount-section">
+                <div class="amount-label">Amount to Pay</div>
+                <div class="amount">{{ fiat_currency }} {{ amount_fiat }}</div>
+                <div class="usdc-amount">{{ amount_usdc }} USDC or {{ amount_xlm }} XLM</div>
+            </div>
+
+            <div class="status pending" id="status">
+                Waiting for payment...
+            </div>
+
+            <div class="timer" id="timer">
+                Expires in: <span id="countdown">15:00</span>
+            </div>
+
+            <!-- Payment Method Tabs -->
+            <div class="payment-tabs">
+                <button class="tab-button usdc active" onclick="switchPayment('usdc')">
+                    Pay with USDC
+                </button>
+                <button class="tab-button xlm" onclick="switchPayment('xlm')">
+                    Pay with XLM
+                </button>
+            </div>
+
+            <div class="qr-section">
+                <!-- USDC QR Code -->
+                <div id="usdc-qr" class="qr-container active">
+                    <div class="qr-code">
+                        <img src="data:image/png;base64,{{ qr_code_address }}" alt="Stellar Address QR Code">
+                    </div>
+                    <p style="font-size: 13px; color: #666; margin: 12px 0;">Scan to get recipient address</p>
+                    <div class="wallet-icons">
+                        <span class="wallet-icon">Freighter</span>
+                        <span class="wallet-icon">Lobstr</span>
+                        <span class="wallet-icon">Solar</span>
+                    </div>
+                </div>
+
+                <!-- XLM QR Code -->
+                <div id="xlm-qr" class="qr-container">
+                    <div class="qr-code">
+                        <img src="data:image/png;base64,{{ qr_code_address }}" alt="Stellar Address QR Code">
+                    </div>
+                    <p style="font-size: 13px; color: #666; margin: 12px 0;">Scan to get recipient address</p>
+                    <div class="wallet-icons">
+                        <span class="wallet-icon">Freighter</span>
+                        <span class="wallet-icon">Lobstr</span>
+                        <span class="wallet-icon">Solar</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="instruction">
+                <strong>How to Pay:</strong>
+                1. Scan QR code to get the destination address<br>
+                2. Copy and enter the amount and memo below in your wallet<br>
+                3. Confirm and send the payment
+            </div>
+
+            <div class="payment-details">
+                <div class="detail-row">
+                    <span class="detail-label">Destination Address:</span>
+                    <span class="detail-value" style="font-size: 11px;">
+                        {{ stellar_address }}
+                        <button class="copy-btn" onclick="copyToClipboard('{{ stellar_address }}')">Copy</button>
+                    </span>
+                </div>
+                <div class="detail-row" id="amount-display-usdc">
+                    <span class="detail-label">Amount (USDC):</span>
+                    <span class="detail-value">
+                        {{ amount_usdc }}
+                        <button class="copy-btn" onclick="copyToClipboard('{{ amount_usdc }}')">Copy</button>
+                    </span>
+                </div>
+                <div class="detail-row" id="amount-display-xlm" style="display: none;">
+                    <span class="detail-label">Amount (XLM):</span>
+                    <span class="detail-value">
+                        {{ amount_xlm }}
+                        <button class="copy-btn" onclick="copyToClipboard('{{ amount_xlm }}')">Copy</button>
+                    </span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Memo (REQUIRED):</span>
+                    <span class="detail-value" style="font-weight: bold;">
+                        {{ payment_memo }}
+                        <button class="copy-btn" onclick="copyToClipboard('{{ payment_memo }}')">Copy</button>
+                    </span>
+                </div>
+                <div class="detail-row" id="asset-code-row">
+                    <span class="detail-label">Asset Code:</span>
+                    <span class="detail-value">
+                        {{ usdc_asset_code }}
+                        <button class="copy-btn" onclick="copyToClipboard('{{ usdc_asset_code }}')">Copy</button>
+                    </span>
+                </div>
+                <div class="detail-row" id="asset-issuer-row">
+                    <span class="detail-label">Asset Issuer:</span>
+                    <span class="detail-value" style="font-size: 10px;">
+                        {{ usdc_asset_issuer }}
+                        <button class="copy-btn" onclick="copyToClipboard('{{ usdc_asset_issuer }}')">Copy</button>
+                    </span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Network:</span>
+                    <span class="detail-value">Stellar Testnet</span>
+                </div>
+            </div>
+
+            <button class="cancel-btn" onclick="cancelPayment()">Cancel Payment</button>
+        </div>
+
+        <div class="footer">
+            Protected by blockchain technology
+            <div class="powered-by">Powered by ChainPe</div>
+        </div>
+    </div>
+
+    <script>
+        let currentPaymentMethod = 'usdc';
+        
+        // Payment URIs for wallet integration
+        const usdcUri = '{{ usdc_uri }}';
+        const xlmUri = '{{ xlm_uri }}';
+        
+        // Switch between USDC and XLM payment methods
+        function switchPayment(method) {
+            currentPaymentMethod = method;
+            
+            // Update active tab
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`.tab-button.${method}`).classList.add('active');
+            
+            // Show correct QR code (both show same address QR)
+            document.getElementById('usdc-qr').classList.remove('active');
+            document.getElementById('xlm-qr').classList.remove('active');
+            document.getElementById(`${method}-qr`).classList.add('active');
+            
+            // Update amount display and asset info
+            if (method === 'usdc') {
+                document.getElementById('amount-display-usdc').style.display = 'flex';
+                document.getElementById('amount-display-xlm').style.display = 'none';
+                document.getElementById('asset-code-row').style.display = 'flex';
+                document.getElementById('asset-issuer-row').style.display = 'flex';
+            } else {
+                document.getElementById('amount-display-usdc').style.display = 'none';
+                document.getElementById('amount-display-xlm').style.display = 'flex';
+                document.getElementById('asset-code-row').style.display = 'none';
+                document.getElementById('asset-issuer-row').style.display = 'none';
+            }
+        }
+        
+        // Open payment in Freighter wallet
+        function openWallet(method) {
+            const uri = method === 'usdc' ? usdcUri : xlmUri;
+            
+            // Try to open in Freighter browser extension
+            if (window.freighter) {
+                window.freighter.requestAccess().then(() => {
+                    window.location.href = uri;
+                });
+            } else {
+                // Fallback: try to open as stellar: protocol handler
+                window.location.href = uri;
+                
+                // Show helpful message
+                setTimeout(() => {
+                    alert('If your wallet did not open automatically, please:\n\n' +
+                          '1. Install Freighter wallet extension, or\n' +
+                          '2. Scan the QR code with your mobile wallet app (Lobstr, Solar, etc.)');
+                }, 1000);
+            }
+        }
+        const sessionId = '{{ session_id }}';
+        const successUrl = '{{ success_url }}';
+        const cancelUrl = '{{ cancel_url }}';
+        const expiryMinutes = 15;
+        let expiryTime = new Date(new Date().getTime() + expiryMinutes * 60000);
+        let checkInterval;
+
+        // Countdown timer
+        function updateTimer() {
+            const now = new Date();
+            const diff = expiryTime - now;
+            
+            if (diff <= 0) {
+                document.getElementById('countdown').textContent = '00:00';
+                document.getElementById('status').className = 'status expired';
+                document.getElementById('status').innerHTML = 'Payment expired';
+                document.getElementById('timer').classList.add('danger');
+                clearInterval(checkInterval);
+                setTimeout(() => {
+                    window.location.href = cancelUrl;
+                }, 3000);
+                return;
+            }
+
+            const minutes = Math.floor(diff / 60000);
+            const seconds = Math.floor((diff % 60000) / 1000);
+            const display = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            
+            document.getElementById('countdown').textContent = display;
+            
+            const timerElement = document.getElementById('timer');
+            if (minutes < 5) {
+                timerElement.classList.add('warning');
+            }
+            if (minutes < 2) {
+                timerElement.classList.remove('warning');
+                timerElement.classList.add('danger');
+            }
+        }
+
+        // Check payment status
+        async function checkPaymentStatus() {
+            try {
+                const response = await fetch(`/public/session/${sessionId}/verify`);
+                const data = await response.json();
+                
+                if (data.status === 'paid') {
+                    document.getElementById('status').className = 'status success';
+                    document.getElementById('status').innerHTML = 'Payment successful!';
+                    clearInterval(checkInterval);
+                    
+                    setTimeout(() => {
+                        window.location.href = successUrl;
+                    }, 2000);
+                } else if (data.status === 'expired' || data.is_expired) {
+                    document.getElementById('status').className = 'status expired';
+                    document.getElementById('status').innerHTML = 'Payment expired';
+                    clearInterval(checkInterval);
+                    
+                    setTimeout(() => {
+                        window.location.href = cancelUrl;
+                    }, 3000);
+                }
+            } catch (error) {
+                console.error('Error checking payment status:', error);
+            }
+        }
+
+        // Copy to clipboard
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+                btn.style.background = '#4caf50';
+                
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '#667eea';
+                }, 2000);
+            });
+        }
+
+        // Cancel payment
+        function cancelPayment() {
+            if (confirm('Are you sure you want to cancel this payment?')) {
+                window.location.href = cancelUrl;
+            }
+        }
+
+        // Initialize
+        updateTimer();
+        setInterval(updateTimer, 1000);
+        checkInterval = setInterval(checkPaymentStatus, 3000);
+    </script>
+</body>
+</html>
